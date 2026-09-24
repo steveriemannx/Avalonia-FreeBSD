@@ -97,6 +97,9 @@ internal class SkiaMetalGpu : ISkiaGpu
 
         public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
+#if AVALONIA_FREEBSD
+            throw new PlatformNotSupportedException("Metal rendering is not available on FreeBSD.");
+#else
             // TODO: use expectedPixelSize
             IMetalPlatformSurfaceRenderingSession? session = null;
             GRBackendRenderTarget? backendTarget = null;
@@ -125,6 +128,7 @@ internal class SkiaMetalGpu : ISkiaGpu
                     session?.Dispose();
                 }
             }
+#endif
         }
 
         public PlatformRenderTargetState State => _target?.State ?? PlatformRenderTargetState.Disposed;

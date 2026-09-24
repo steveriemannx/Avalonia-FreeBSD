@@ -27,7 +27,7 @@ namespace Avalonia
                 LoadAvaloniaNative(builder);
                 LoadSkia(builder);
             }
-            else if (OperatingSystem.IsLinux())
+            else if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
             {
                 LoadX11(builder);
                 LoadSkia(builder);

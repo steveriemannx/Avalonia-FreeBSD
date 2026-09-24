@@ -13,6 +13,7 @@
     <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
     <PackageVersion Include="HarfBuzzSharp" Version="8.3.1.3" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.3" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.FreeBSD" Version="8.3.1.3" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="8.3.1.3" />
     <PackageVersion Include="MicroCom.CodeGenerator" Version="0.11.6" />
     <PackageVersion Include="MicroCom.CodeGenerator.MSBuild" Version="0.11.6" />
@@ -54,8 +55,10 @@
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.12" />
-    <PackageVersion Include="SkiaSharp" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.4" Condition="'$(IncludeFreeBSDNativeAssets)' != 'true'" />
+    <PackageVersion Include="SkiaSharp" Version="3.116.0" Condition="'$(IncludeFreeBSDNativeAssets)' == 'true'" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.FreeBSD" Version="3.116.0" />
     <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.4" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="4.5.0" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="9.0.10" />

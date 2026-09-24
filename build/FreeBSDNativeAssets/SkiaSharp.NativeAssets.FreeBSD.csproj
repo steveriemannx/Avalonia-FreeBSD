@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>SkiaSharp.NativeAssets.FreeBSD</PackageId>
+    <Version>3.116.0</Version>
+    <Authors>Avalonia contributors</Authors>
+    <Description>FreeBSD 15 x64 native SkiaSharp runtime asset built from the BSD-licensed FreeBSD libskiasharp port.</Description>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <PackageOutputPath>$(HOME)/dotnet-nupkg</PackageOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(HOME)/dotnet-tmp/freebsd-native-assets/skia/libSkiaSharp.so"
+          Pack="true" PackagePath="runtimes/freebsd.15-x64/native/libSkiaSharp.so" Visible="false" />
+    <None Include="$(HOME)/dotnet-tmp/freebsd-native-assets/skia/LICENSE.txt"
+          Pack="true" PackagePath="LICENSE.txt" Visible="false" />
+    <None Include="$(HOME)/dotnet-tmp/freebsd-native-assets/skia/FTL.txt"
+          Pack="true" PackagePath="FTL.txt" Visible="false" />
+    <None Include="SkiaSharp.NativeAssets.FreeBSD/README.md" Pack="true" PackagePath="README.md" />
+  </ItemGroup>
+</Project>

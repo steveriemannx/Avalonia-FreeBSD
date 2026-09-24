@@ -2,6 +2,10 @@
   <Import Project="$(MSBuildThisFileDirectory)/build/AvaloniaPublicKey.props"/>
   <Import Project="$(MSBuildThisFileDirectory)/build/TargetFrameworks.props"/>
   <PropertyGroup>
+    <IncludeFreeBSDNativeAssets Condition="'$(IncludeFreeBSDNativeAssets)' == '' and $([MSBuild]::IsOSPlatform('FreeBSD'))">true</IncludeFreeBSDNativeAssets>
+    <IncludeFreeBSDNativeAssets Condition="'$(IncludeFreeBSDNativeAssets)' == '' and '$(RuntimeIdentifier)' != '' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('freebsd'))">true</IncludeFreeBSDNativeAssets>
+    <DefineConstants Condition="'$(IncludeFreeBSDNativeAssets)' == 'true'">$(DefineConstants);AVALONIA_FREEBSD</DefineConstants>
+    <NoWarn Condition="'$(IncludeFreeBSDNativeAssets)' == 'true'">$(NoWarn);NETSDK1206</NoWarn>
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)build-intermediate/nuget</PackageOutputPath>
     <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\src\tools\Avalonia.Designer.HostApp\bin\$(Configuration)\$(AvsCurrentTargetFramework)\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
     <SharedAssetsPath>$(MSBuildThisFileDirectory)\build\Assets\</SharedAssetsPath>

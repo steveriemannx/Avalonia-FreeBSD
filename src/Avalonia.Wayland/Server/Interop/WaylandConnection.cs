@@ -85,7 +85,7 @@ class WaylandConnection : IDisposable
         
         flushError = (Errno)Marshal.GetLastPInvokeError();
 
-        if (flushError == Errno.EAGAIN)
+        if (flushError is Errno.EAGAIN or Errno.EAGAIN_FreeBSD)
         {
             // Not an error, just network buffers being full. We need to read our side of the socket and/or wait
             // for the compositor to process the previous requests, so report success
@@ -104,7 +104,7 @@ class WaylandConnection : IDisposable
         ConnectionReset
     }
 
-    bool IsConnectionReset(Errno errno) => errno is Errno.EPIPE or Errno.ECONNRESET;
+    bool IsConnectionReset(Errno errno) => errno is Errno.EPIPE or Errno.ECONNRESET or Errno.ECONNRESET_FreeBSD;
 
     bool ClassifyErrorOrThrow(Errno errno, out DispatchResult result)
     {
@@ -114,7 +114,7 @@ class WaylandConnection : IDisposable
             return true;
         }
 
-        if (errno == Errno.EPROTO)
+        if (errno is Errno.EPROTO or Errno.EPROTO_FreeBSD)
         {
             throw new AvaloniaWaylandProtocolErrorException();
         }

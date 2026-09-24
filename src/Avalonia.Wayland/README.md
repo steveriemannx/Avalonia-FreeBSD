@@ -1,5 +1,16 @@
 # Wayland platform
 
+## FreeBSD
+
+FreeBSD applications can use the Wayland backend with the same fallback setup as Linux:
+
+```csharp
+AppBuilder.Configure<App>()
+    .UsePlatformDetect()
+    .UseWaylandWithFallback();
+```
+
+The FreeBSD system must provide `libwayland-client`, `libwayland-cursor`, and `libxkbcommon` (for example, the `wayland` and `libxkbcommon` packages). The backend uses Avalonia's managed dialogs and Wayland/DBus integrations; it does not require GTK.
 
 ## Special considerations
 

@@ -56,7 +56,11 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
                     Size = sessionImageInfo.MemorySize
                 }
             };
+#if AVALONIA_FREEBSD
+            using var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, checked((int)imageInfo.SampleCount), imageInfo);
+#else
             using var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, imageInfo);
+#endif
             var surface = SKSurface.Create(_gpu.GrContext, renderTarget,
                 session.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
                 session.IsRgba ? SKColorType.Rgba8888 : SKColorType.Bgra8888, SKColorSpace.CreateSrgb());

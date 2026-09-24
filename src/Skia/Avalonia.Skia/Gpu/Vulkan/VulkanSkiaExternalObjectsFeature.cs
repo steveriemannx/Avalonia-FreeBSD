@@ -93,7 +93,11 @@ internal class VulkanSkiaExternalObjectsFeature : IExternalObjectsRenderInterfac
                     Size = info.MemorySize
                 }
             };
+#if AVALONIA_FREEBSD
+            using var renderTarget = new GRBackendRenderTarget(_properties.Width, _properties.Height, checked((int)imageInfo.SampleCount), imageInfo);
+#else
             using var renderTarget = new GRBackendRenderTarget(_properties.Width, _properties.Height, imageInfo);
+#endif
             using var surface = SKSurface.Create(_gpu.GrContext, renderTarget,
                 _properties.TopLeftOrigin ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
                 _properties.Format == PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm

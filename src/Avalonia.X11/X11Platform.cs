@@ -106,7 +106,9 @@ namespace Avalonia.X11
                 .Bind<IPlatformDragSource>().ToConstant(new X11DragSource(this))
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
-                .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(OperatingSystem.IsLinux()
+                    ? (IMountedVolumeInfoProvider)new LinuxMountedVolumeInfoProvider()
+                    : new BclMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
             Screens = X11Screens = new X11Screens(this);
@@ -395,7 +397,7 @@ namespace Avalonia
         Glx = 2,
 
         /// <summary>
-        /// Enables native Linux EGL rendering.
+        /// Enables EGL rendering.
         /// </summary>
         Egl = 3,
         
@@ -406,7 +408,7 @@ namespace Avalonia
     }
     
     /// <summary>
-    /// Platform-specific options which apply to Linux.
+    /// Platform-specific options which apply to Linux and FreeBSD.
     /// </summary>
     public class X11PlatformOptions
     {
@@ -430,7 +432,7 @@ namespace Avalonia
         public bool OverlayPopups { get; set; }
 
         /// <summary>
-        /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
+        /// Enables global menu support on Linux and FreeBSD desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
         /// The default value is true.
         /// </summary>
         public bool UseDBusMenu { get; set; } = true;

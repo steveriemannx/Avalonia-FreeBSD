@@ -30,7 +30,20 @@ namespace Avalonia.X11
 
         private const int EPOLLIN = 1;
         private const int EPOLL_CTL_ADD = 1;
-        private const int O_NONBLOCK = 2048;
+        private const int O_NONBLOCK_LINUX = 0x800;
+        private const int O_NONBLOCK_FREEBSD = 0x0004;
+        private const int O_CLOEXEC_LINUX = 0x80000;
+        private const int O_CLOEXEC_FREEBSD = 0x00100000;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct PollFd
+        {
+            public int fd;
+            public short events;
+            public short revents;
+        }
+
+        private const short POLLIN = 0x0001;
         
         [StructLayout(LayoutKind.Sequential)]
         private struct epoll_event
@@ -50,6 +63,10 @@ namespace Avalonia.X11
 
         [DllImport("libc")]
         private extern static int pipe2(int* fds, int flags);
+
+        [DllImport("libc", SetLastError = true)]
+        private extern static int poll(PollFd* fds, uint nfds, int timeout);
+
         [DllImport("libc")]
         private extern static IntPtr write(int fd, void* buf, IntPtr count);
         
@@ -68,6 +85,7 @@ namespace Avalonia.X11
         private bool _wakeupRequested;
         private long? _nextTimer;
         private int _epoll;
+        private bool _usePoll;
         private Stopwatch _clock = Stopwatch.StartNew();
         private readonly X11EventDispatcher _x11Events;
 
@@ -75,6 +93,19 @@ namespace Avalonia.X11
         {
             _platform = platform;
             _x11Events = new X11EventDispatcher(platform);
+
+            var fds = stackalloc int[2];
+            if (OperatingSystem.IsFreeBSD())
+            {
+                _usePoll = true;
+                if (pipe2(fds, O_NONBLOCK_FREEBSD | O_CLOEXEC_FREEBSD) == -1)
+                    throw new X11Exception("pipe2 failed");
+
+                _sigread = fds[0];
+                _sigwrite = fds[1];
+                return;
+            }
+
             var ev = new epoll_event()
             {
                 events = EPOLLIN,
@@ -87,8 +118,9 @@ namespace Avalonia.X11
             if (epoll_ctl(_epoll, EPOLL_CTL_ADD, _x11Events.Fd, ref ev) == -1)
                 throw new X11Exception("Unable to attach X11 connection handle to epoll");
 
-            var fds = stackalloc int[2];
-            pipe2(fds, O_NONBLOCK);
+            if (pipe2(fds, O_NONBLOCK_LINUX | O_CLOEXEC_LINUX) == -1)
+                throw new X11Exception("pipe2 failed");
+
             _sigread = fds[0];
             _sigwrite = fds[1];
             
@@ -116,6 +148,7 @@ namespace Avalonia.X11
 
         public void RunLoop(CancellationToken cancellationToken)
         {
+            var pollFds = stackalloc PollFd[2];
             while (!cancellationToken.IsCancellationRequested)
             {
                 var now = _clock.ElapsedMilliseconds;
@@ -137,7 +170,31 @@ namespace Avalonia.X11
                         continue;
                     
                     var timeout = _nextTimer == null ? (int)-1 : Math.Max(1, _nextTimer.Value - now);
-                    epoll_wait(_epoll, &ev, 1, (int)Math.Min(int.MaxValue, timeout));
+
+                    if (_usePoll)
+                    {
+                        pollFds[0] = new PollFd { fd = _x11Events.Fd, events = POLLIN };
+                        pollFds[1] = new PollFd { fd = _sigread, events = POLLIN };
+                        int result;
+                        do
+                        {
+                            result = poll(pollFds, 2, (int)Math.Min(int.MaxValue, timeout));
+                        } while (result == -1 && Marshal.GetLastPInvokeError() == 4);
+
+                        if (result == -1)
+                            throw new X11Exception($"poll failed with errno {Marshal.GetLastPInvokeError()}");
+                    }
+                    else
+                    {
+                        var result = epoll_wait(_epoll, &ev, 1, (int)Math.Min(int.MaxValue, timeout));
+                        if (result == -1)
+                        {
+                            var errno = Marshal.GetLastPInvokeError();
+                            if (errno == 4)
+                                continue;
+                            throw new X11Exception($"epoll_wait failed with errno {errno}");
+                        }
+                    }
                     
                     // Drain the signaled pipe
                     int buf = 0;

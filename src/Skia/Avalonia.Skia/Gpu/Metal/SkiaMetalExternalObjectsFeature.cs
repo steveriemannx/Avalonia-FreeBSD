@@ -33,6 +33,13 @@ class SkiaMetalExternalObjectsFeature(SkiaMetalGpu gpu, IMetalExternalObjectsFea
         public IBitmapImpl SnapshotWithTimelineSemaphores(IPlatformRenderInterfaceImportedSemaphore waitForSemaphore,
             ulong waitForValue, IPlatformRenderInterfaceImportedSemaphore signalSemaphore, ulong signalValue)
         {
+#if AVALONIA_FREEBSD
+            _ = gpu;
+            _ = feature;
+            _ = colorType;
+            _ = topLeftOrigin;
+            throw new System.PlatformNotSupportedException("Metal external images are not available on FreeBSD.");
+#else
             gpu.GrContext.Flush(true, false);
             feature.SubmitWait(((ImportedSemaphore)waitForSemaphore).Event, waitForValue);
             using var backendTarget = new GRBackendRenderTarget(texture.Width, texture.Height, new GRMtlTextureInfo(texture.Handle));
@@ -44,6 +51,7 @@ class SkiaMetalExternalObjectsFeature(SkiaMetalGpu gpu, IMetalExternalObjectsFea
             gpu.GrContext.Flush();
             feature.SubmitSignal(((ImportedSemaphore)signalSemaphore).Event, signalValue);
             return rv;
+#endif
         }
 
         public IBitmapImpl SnapshotWithAutomaticSync() => throw new System.NotSupportedException();

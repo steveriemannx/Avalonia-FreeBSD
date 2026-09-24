@@ -17,8 +17,9 @@ unsafe class UnsafeNativeMethods
     
     
     
-    public const int O_NONBLOCK = 2048;
-    public const int O_CLOEXEC = 0x80000;
+    // The fcntl values differ between Linux and FreeBSD.
+    public static readonly int O_NONBLOCK = OperatingSystem.IsFreeBSD() ? 0x0004 : 2048;
+    public static readonly int O_CLOEXEC = OperatingSystem.IsFreeBSD() ? 0x00100000 : 0x80000;
 
     public const uint MFD_CLOEXEC = 1;
 
@@ -43,9 +44,12 @@ unsafe class UnsafeNativeMethods
     {
         EINTR = 4,
         EAGAIN = 11,
+        EAGAIN_FreeBSD = 35,
         EPIPE = 32,
         ECONNRESET = 104,
+        ECONNRESET_FreeBSD = 54,
         EPROTO = 71,
+        EPROTO_FreeBSD = 92,
     }
 
     [DllImport("libc", SetLastError = true)]

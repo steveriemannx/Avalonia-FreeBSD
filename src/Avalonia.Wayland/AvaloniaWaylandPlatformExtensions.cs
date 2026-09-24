@@ -31,16 +31,16 @@ public static class AvaloniaWaylandPlatformExtensions
     /// Configures the application to use the Wayland windowing backend when a usable Wayland
     /// compositor is available, falling back to the previously configured windowing backend
     /// otherwise. Call it after <c>UseX11</c> or <c>UsePlatformDetect</c>, e. g.
-    /// <c>.UsePlatformDetect().UseWaylandWithFallback()</c>. Does nothing on non-Linux platforms.
+    /// <c>.UsePlatformDetect().UseWaylandWithFallback()</c>. Supported on Linux and FreeBSD.
     /// </summary>
     /// <param name="builder">The application builder.</param>
     /// <returns>The same <paramref name="builder"/> for chaining.</returns>
     /// <exception cref="InvalidOperationException">
-    /// No windowing backend was configured prior to this call (on Linux).
+    /// No windowing backend was configured prior to this call (on Linux or FreeBSD).
     /// </exception>
     public static AppBuilder UseWaylandWithFallback(this AppBuilder builder)
     {
-        if (!OperatingSystem.IsLinux())
+        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsFreeBSD())
             return builder;
 
         var fallback = builder.WindowingSubsystemInitializer
